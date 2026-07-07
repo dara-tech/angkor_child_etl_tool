@@ -1,13 +1,45 @@
 const { runETL } = require('../src/etl');
 const { generateBackup } = require('../src/backup');
 const { decryptText } = require('../src/crypto-utils');
+const { testConnections } = require('../src/db');
 const fs = require('fs');
 const path = require('path');
+
+function holdWindowOnFailure() {
+  if (process.stdin.isTTY) {
+    console.log('\n[!] Press any key to exit...');
+    process.stdin.setRawMode(true);
+    process.stdin.resume();
+    process.stdin.on('data', () => process.exit(1));
+  } else {
+    process.exit(1);
+  }
+}
 
 async function main() {
   console.log(`[${new Date().toISOString()}] Starting scheduled ETL process...`);
   
   try {
+    // 0. Test connections first to provide clean errors to the user
+    console.log(`[${new Date().toISOString()}] Validating database connections...`);
+    const status = await testConnections();
+    
+    if (!status.sqlserver.connected) {
+      console.error(`\n[ERROR] Could not connect to SQL Server!`);
+      console.error(`Reason: ${status.sqlserver.error}`);
+      console.error(`Please check your config.json file and ensure the SQL Server is running.`);
+      return holdWindowOnFailure();
+    }
+    
+    if (!status.mysql.connected) {
+      console.error(`\n[ERROR] Could not connect to MySQL!`);
+      console.error(`Reason: ${status.mysql.error}`);
+      console.error(`Please check your config.json file and ensure MySQL is running.`);
+      return holdWindowOnFailure();
+    }
+    
+    console.log(`[${new Date().toISOString()}] Connections validated successfully.`);
+
     // 1. Run the ETL process (SQL Server -> MySQL)
     await runETL((msg) => {
       console.log(`[${new Date().toISOString()}] ETL: ${msg}`);
@@ -42,10 +74,19 @@ async function main() {
     console.log(`[${new Date().toISOString()}] SQL script saved successfully to: ${outputPath}`);
     console.log(`[${new Date().toISOString()}] Scheduled task finished completely.`);
     
-    process.exit(0);
+    // Hold window on success as well so they know it finished if double-clicked
+    if (process.stdin.isTTY) {
+      console.log('\n[SUCCESS] Press any key to exit...');
+      process.stdin.setRawMode(true);
+      process.stdin.resume();
+      process.stdin.on('data', () => process.exit(0));
+    } else {
+      process.exit(0);
+    }
   } catch (error) {
-    console.error(`[${new Date().toISOString()}] ERROR during scheduled task:`, error);
-    process.exit(1);
+    console.error(`\n[FATAL ERROR] An unexpected error occurred:`);
+    console.error(error.message || error);
+    holdWindowOnFailure();
   }
 }
 
