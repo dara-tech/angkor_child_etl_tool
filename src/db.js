@@ -13,14 +13,14 @@ async function testConnections() {
   // Test SQL Server
   try {
     let sqlConfig = { ...config.sqlserver, requestTimeout: 3000 };
-    if (!config.sqlserver.user && config.sqlserver.connectionString) {
+    if (config.sqlserver.connectionString) {
       sqlConfig = { connectionString: config.sqlserver.connectionString, requestTimeout: 3000 };
     }
     const sqlPool = await sql.connect(sqlConfig);
     await sqlPool.close();
     status.sqlserver.connected = true;
   } catch (err) {
-    status.sqlserver.error = err.message;
+    status.sqlserver.error = err.message || (typeof err === 'string' ? err : JSON.stringify(err));
   }
   
   // Test MySQL
@@ -29,7 +29,7 @@ async function testConnections() {
     await mysqlConn.end();
     status.mysql.connected = true;
   } catch (err) {
-    status.mysql.error = err.message;
+    status.mysql.error = err.message || (typeof err === 'string' ? err : JSON.stringify(err));
   }
   
   return status;

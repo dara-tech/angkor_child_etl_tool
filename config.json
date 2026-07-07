@@ -2,8 +2,8 @@
   "sqlserver": {
     "server": "localhost",
     "port": 1433,
-    "user": "sa",
-    "password": "root",
+    "user": "",
+    "password": "",
     "database": "HIS",
     "options": {
       "encrypt": false,
