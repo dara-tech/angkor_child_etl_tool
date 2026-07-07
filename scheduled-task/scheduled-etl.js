@@ -58,8 +58,14 @@ async function main() {
     console.log(`[${new Date().toISOString()}] Decrypting backup to raw SQL format...`);
     const plainSql = decryptText(encryptedData, password);
     
-    // 3. Save it to a 'converted_sql' folder
-    const outputDir = path.join(__dirname, 'converted_sql');
+    // 3. Save it to a 'converted_sql' folder alongside the executable
+    let outputDir;
+    if (process.pkg) {
+      outputDir = path.join(path.dirname(process.execPath), 'converted_sql');
+    } else {
+      outputDir = path.join(__dirname, 'converted_sql');
+    }
+    
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir);
     }
