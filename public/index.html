@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Database Exporter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .extraction-active #terminal-console {
+      box-shadow: 0 0 25px var(--primary-glow);
+      border-color: var(--primary-color);
+    }
+    
+    /* Make status indicators simple, not cards */
+    .status-card {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      backdrop-filter: none !important;
+      padding: 0 !important;
+    }
+    .db-label { display: none; } /* Hide the uppercase labels to make it simpler */
+  </style>
+</head>
+<body>
+  <div class="glass-bg"></div>
+  
+  <div class="app-container" style="align-items: center; padding-top: 4rem;">
+    <!-- Header -->
+    <header class="app-header" style="justify-content: center; margin-bottom: 2rem;">
+      <div class="title-container" style="text-align: center;">
+        <h1 style="font-size: 2.5rem;">DB Exporter</h1>
+        <p class="subtitle" style="font-size: 1rem;">Data Extraction System</p>
+      </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <div class="main-workspace" style="display: flex; flex-direction: column; gap: 3rem; align-items: center; width: 100%; max-width: 900px;">
+      
+      <div class="button-group" style="display: flex; gap: 1.5rem; justify-content: center;">
+        <button id="btn-run-etl" class="btn btn-primary" style="font-size: 1.3rem; padding: 1.2rem 2rem; width: 260px; height: 68px; border-radius: 16px; box-shadow: 0 10px 30px var(--primary-glow); white-space: nowrap; justify-content: center;">
+          <svg class="icon" viewBox="0 0 24 24" style="width: 1.8rem; height: 1.8rem;"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          Extract Data
+        </button>
+        
+        <button id="btn-upload-backup" class="btn btn-success" style="font-size: 1.3rem; padding: 1.2rem 2rem; width: 260px; height: 68px; border-radius: 16px; box-shadow: 0 10px 30px var(--success-glow); white-space: nowrap; justify-content: center;">
+          <svg class="icon" viewBox="0 0 24 24" style="width: 1.8rem; height: 1.8rem;"><path d="M12 19V5m-7 7l7-7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Upload Backup
+        </button>
+        <input type="file" id="file-restore-upload" accept=".h149,.bak" style="display: none;">
+      </div>
+
+      <!-- Live Terminal Log -->
+      <div style="width: 100%;">
+        <div class="terminal-header" style="border: none; padding-bottom: 0.5rem; margin-left: 0.5rem;">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+          <span class="terminal-title">Extraction Log</span>
+          <button id="btn-clear-terminal" class="btn-clear">Clear</button>
+        </div>
+        <div id="terminal-console" class="terminal-console" style="height: 450px; font-size: 0.95rem; transition: all 0.4s ease; background: rgba(15, 23, 42, 0.85);">
+          <div class="log-line system">Ready to extract data...</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Connection Status -->
+    <div class="status-container" style="position: fixed; bottom: 1rem; right: 1.5rem; display: flex; gap: 1.5rem; opacity: 0.6; font-size: 0.8rem; z-index: 10;">
+      <div id="sql-status-card" class="status-card pending">
+        <div class="status-indicator"></div>
+        <div class="status-info">
+          <span>SQL: <span class="db-status">Checking...</span></span>
+        </div>
+      </div>
+      <div id="mysql-status-card" class="status-card pending">
+        <div class="status-indicator"></div>
+        <div class="status-info">
+          <span>MySQL: <span class="db-status">Checking...</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
