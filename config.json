@@ -1,0 +1,20 @@
+{
+  "sqlserver": {
+    "server": "localhost",
+    "port": 1433,
+    "user": "sa",
+    "password": "root",
+    "database": "HIS",
+    "options": {
+      "encrypt": false,
+      "trustServerCertificate": true
+    }
+  },
+  "mysql": {
+    "host": "localhost",
+    "port": 3306,
+    "user": "root",
+    "password": "root",
+    "database": "preart"
+  }
+}
