@@ -19,6 +19,7 @@ function loadConfig() {
       const port = config.sqlserver.port || 1433;
       const database = config.sqlserver.database || 'HIS';
       const user = config.sqlserver.user;
+      
       const password = config.sqlserver.password;
       
       let serverStr = server;

@@ -15,8 +15,30 @@ CASE ISNULL(pcr.PCRResult, '')
 END as Result, 
 ISNULL(pcr.ResultDate, '1900-01-01') as DaRresult, 
 '' as DBS, '' as Technic, '' as ResultIn, '' as Other, 
-LEFT(CAST(ISNULL(pcr.id, ABS(CHECKSUM(NEWID()))) AS VARCHAR(17)), 17) as TID
+LEFT('P' + CAST(ISNULL(pcr.id, ABS(CHECKSUM(NEWID()))) AS VARCHAR(16)), 17) as TID
 from tblExposePatientBloodTestPCR pcr
 left join tblExposeFollowUp ef on pcr.ExpFollowUpID = ef.ExpFollowUpID
 left outer join tblCodeID ci on ci.PtCode=ISNULL(pcr.ptcode, ef.ptcode) and ci.ClinicId like 'E%'
 where ci.ClinicID is not null
+
+UNION ALL
+
+-- EXTRACT ALL ACTUAL ANTIBODY TESTS
+select ci.ClinicID, 
+5 as DNAPcr, 
+ISNULL(ab.TestDate, '1900-01-01') as DaPcrArr, '' as OI, ISNULL(ab.TestDate, '1900-01-01') as DaBlood, '' as LabID, 
+ISNULL(ab.ResultDate, '1900-01-01') as DaReceive, ISNULL(ab.ResultDate, '1900-01-01') as DaAnalys, 
+CASE ISNULL(ab.AntibodyResult, '')
+  WHEN 'Positive' THEN 1
+  WHEN 'Negative' THEN 0
+  ELSE NULL
+END as Result, 
+ISNULL(ab.ResultDate, '1900-01-01') as DaRresult, 
+'' as DBS, '' as Technic, '' as ResultIn, '' as Other, 
+LEFT('A' + CAST(ISNULL(ab.id, ABS(CHECKSUM(NEWID()))) AS VARCHAR(16)), 17) as TID
+from tblExposePatientBloodTestAntibody ab
+left join tblExposeFollowUp ef on ab.ExpFollowUpID = ef.ExpFollowUpID
+left outer join tblCodeID ci on ci.PtCode=ISNULL(ab.ptcode, ef.ptcode) and ci.ClinicId like 'E%'
+where ci.ClinicID is not null
+
+

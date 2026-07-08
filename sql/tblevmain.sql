@@ -16,8 +16,8 @@ CASE ISNULL(pcr.DNAPCR, '')
 END as DNAPre, 
 LEFT(CAST(ISNULL(pcr.id, ABS(CHECKSUM(NEWID()))) AS VARCHAR(17)), 17) as TestID, ISNULL(ef.NextAppointment, '1900-01-01') as DaApp, 
 CASE ISNULL(ab.AntibodyResult, '')
-  WHEN 'Positive' THEN 1
-  WHEN 'Negative' THEN 0
+  WHEN 'Positive' THEN 0
+  WHEN 'Negative' THEN 1
   ELSE NULL
 END as Antibody, 
 ISNULL(ab.ResultDate, '1900-01-01') as DaAntibody, '-1' as Antiaffeeding, '' as OtherDNA
