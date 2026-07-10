@@ -15,7 +15,7 @@ CASE ISNULL(pcr.PCRResult, '')
 END as Result, 
 ISNULL(pcr.ResultDate, '1900-01-01') as DaRresult, 
 '' as DBS, '' as Technic, '' as ResultIn, '' as Other, 
-LEFT('P' + CAST(ISNULL(pcr.id, ABS(CHECKSUM(NEWID()))) AS VARCHAR(16)), 17) as TID
+ci.ClinicID + right('0'+cast(day(ISNULL(ef.VisitDate, pcr.TestDate)) as varchar(2)),2) + right('0'+cast(Month(ISNULL(ef.VisitDate, pcr.TestDate)) as varchar(2)),2) + cast(year(ISNULL(ef.VisitDate, pcr.TestDate)) as varchar(4)) as TID
 from tblExposePatientBloodTestPCR pcr
 left join tblExposeFollowUp ef on pcr.ExpFollowUpID = ef.ExpFollowUpID
 left outer join tblCodeID ci on ci.PtCode=ISNULL(pcr.ptcode, ef.ptcode) and ci.ClinicId like 'E%'
@@ -35,7 +35,7 @@ CASE ISNULL(ab.AntibodyResult, '')
 END as Result, 
 ISNULL(ab.ResultDate, '1900-01-01') as DaRresult, 
 '' as DBS, '' as Technic, '' as ResultIn, '' as Other, 
-LEFT('A' + CAST(ISNULL(ab.id, ABS(CHECKSUM(NEWID()))) AS VARCHAR(16)), 17) as TID
+ci.ClinicID + right('0'+cast(day(ISNULL(ef.VisitDate, ab.TestDate)) as varchar(2)),2) + right('0'+cast(Month(ISNULL(ef.VisitDate, ab.TestDate)) as varchar(2)),2) + cast(year(ISNULL(ef.VisitDate, ab.TestDate)) as varchar(4)) as TID
 from tblExposePatientBloodTestAntibody ab
 left join tblExposeFollowUp ef on ab.ExpFollowUpID = ef.ExpFollowUpID
 left outer join tblCodeID ci on ci.PtCode=ISNULL(ab.ptcode, ef.ptcode) and ci.ClinicId like 'E%'

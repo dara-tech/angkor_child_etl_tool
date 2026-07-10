@@ -6,8 +6,8 @@ CASE ISNULL(pcr.PCRResult, '')
   ELSE NULL
 END as DNA, 
 ISNULL(pcr.ResultDate, '1900-01-01') as DaResult, 
-LEFT(CAST(ISNULL(ef.ExpFollowUpID, ABS(CHECKSUM(NEWID()))) AS VARCHAR(17)), 17) as Vid, 
-CASE ISNULL(pcr.DNAPCR, '') 
+ci.ClinicID + right('0'+cast(day(ef.VisitDate) as varchar(2)),2) + right('0'+cast(Month(ef.VisitDate) as varchar(2)),2) + cast(year(ef.VisitDate) as varchar(4)) as Vid, 
+CASE ISNULL(pcr.DNAPCR, '')
   WHEN 'First PCR' THEN 1 
   WHEN 'Confirm First PCR' THEN 2 
   WHEN 'Second PCR' THEN 3 

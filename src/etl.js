@@ -24,9 +24,9 @@ function readSqlFile(filename) {
 async function runETL(logCallback) {
   const config = loadConfig();
   logCallback('Connecting to SQL Server (Source)...');
-  let sqlConfig = config.sqlserver;
+  let sqlConfig = { ...config.sqlserver, requestTimeout: 300000 };
   if (!config.sqlserver.user && config.sqlserver.connectionString) {
-    sqlConfig = { connectionString: config.sqlserver.connectionString };
+    sqlConfig = { connectionString: config.sqlserver.connectionString, requestTimeout: 300000 };
   }
   const sqlPool = await sql.connect(sqlConfig);
   
@@ -43,9 +43,11 @@ async function runETL(logCallback) {
     logCallback('Enforcing NULL schema allowances on MySQL target...');
     try {
       await mysqlConn.execute('ALTER TABLE tbletest MODIFY Result int NULL');
+      await mysqlConn.execute('ALTER TABLE tbletest MODIFY TID VARCHAR(50)');
       await mysqlConn.execute('ALTER TABLE tblevmain MODIFY DNA int NULL');
       await mysqlConn.execute('ALTER TABLE tblevmain MODIFY DNAPre int NULL');
       await mysqlConn.execute('ALTER TABLE tblevmain MODIFY Antibody int NULL');
+      await mysqlConn.execute('ALTER TABLE tblevmain MODIFY TestID VARCHAR(50)');
     } catch (e) {
       logCallback(`Schema warning: ${e.message}`);
     }
@@ -97,7 +99,7 @@ async function runETL(logCallback) {
           
           const placeholders = chunk.map(() => `(${Array(columnsCount).fill('?').join(', ')})`).join(', ');
           const values = chunk.flat();
-          const sqlInsert = `INSERT INTO ${step.name} (${columnNames}) VALUES ${placeholders}`;
+          const sqlInsert = `INSERT IGNORE INTO ${step.name} (${columnNames}) VALUES ${placeholders}`;
           
           await mysqlConn.query(sqlInsert, values);
         }
