@@ -11,7 +11,7 @@ ISNULL(pcr.ResultDate, '1900-01-01') as DaReceive, ISNULL(pcr.ResultDate, '1900-
 CASE ISNULL(pcr.PCRResult, '')
   WHEN 'Positive' THEN 1
   WHEN 'Negative' THEN 0
-  ELSE NULL
+  ELSE 2
 END as Result, 
 ISNULL(pcr.ResultDate, '1900-01-01') as DaRresult, 
 '' as DBS, '' as Technic, '' as ResultIn, '' as Other, 
@@ -31,7 +31,7 @@ ISNULL(ab.ResultDate, '1900-01-01') as DaReceive, ISNULL(ab.ResultDate, '1900-01
 CASE ISNULL(ab.AntibodyResult, '')
   WHEN 'Positive' THEN 1
   WHEN 'Negative' THEN 0
-  ELSE NULL
+  ELSE 2
 END as Result, 
 ISNULL(ab.ResultDate, '1900-01-01') as DaRresult, 
 '' as DBS, '' as Technic, '' as ResultIn, '' as Other, 
