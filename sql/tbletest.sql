@@ -1,10 +1,12 @@
 select ci.ClinicID, 
-CASE ISNULL(pcr.DNAPCR, '') 
-  WHEN 'First PCR' THEN 1 
-  WHEN 'Confirm First PCR' THEN 2 
-  WHEN 'Second PCR' THEN 3 
-  WHEN 'Confirm Second PCR' THEN 4 
-  ELSE 0 
+CASE 
+  WHEN pcr.TestDate IS NULL OR pcr.TestDate = '1900-01-01' THEN -1
+  WHEN pcr.DNAPCR IN ('Confirm First PCR', 'Confirm Second PCR') THEN 4
+  WHEN DATEDIFF(day, p.DOB, pcr.TestDate) <= 28 THEN 0
+  WHEN DATEDIFF(day, p.DOB, pcr.TestDate) BETWEEN 29 AND 76 THEN 1
+  WHEN DATEDIFF(day, p.DOB, pcr.TestDate) BETWEEN 77 AND 242 THEN 3
+  WHEN DATEDIFF(day, p.DOB, pcr.TestDate) BETWEEN 243 AND 302 THEN 5
+  ELSE 3
 END as DNAPcr, 
 ISNULL(pcr.TestDate, '1900-01-01') as DaPcrArr, '' as OI, ISNULL(pcr.TestDate, '1900-01-01') as DaBlood, '' as LabID, 
 ISNULL(pcr.ResultDate, '1900-01-01') as DaReceive, ISNULL(pcr.ResultDate, '1900-01-01') as DaAnalys, 
@@ -18,6 +20,7 @@ ISNULL(pcr.ResultDate, '1900-01-01') as DaRresult,
 ci.ClinicID + right('0'+cast(day(ISNULL(ef.VisitDate, pcr.TestDate)) as varchar(2)),2) + right('0'+cast(Month(ISNULL(ef.VisitDate, pcr.TestDate)) as varchar(2)),2) + cast(year(ISNULL(ef.VisitDate, pcr.TestDate)) as varchar(4)) as TID
 from tblExposePatientBloodTestPCR pcr
 left join tblExposeFollowUp ef on pcr.ExpFollowUpID = ef.ExpFollowUpID
+left outer join tblPatient p on p.PtCode = ISNULL(pcr.ptcode, ef.ptcode)
 left outer join tblCodeID ci on ci.PtCode=ISNULL(pcr.ptcode, ef.ptcode) and ci.ClinicId like 'E%'
 where ci.ClinicID is not null
 

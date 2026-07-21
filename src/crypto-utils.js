@@ -12,8 +12,8 @@ async function encryptText(text, password) {
   const iv = crypto.randomBytes(16);
   const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
   
-  let encrypted = cipher.update(text, 'utf8', 'hex');
-  encrypted += cipher.final('hex');
+  let encrypted = cipher.update(text, 'utf8', 'base64');
+  encrypted += cipher.final('base64');
   
   return JSON.stringify({
     salt: salt.toString('hex'),
@@ -30,7 +30,7 @@ function decryptText(encryptedJsonString, password) {
   const key = crypto.pbkdf2Sync(password, salt, 100000, 32, 'sha256');
   const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
   
-  let decrypted = decipher.update(encryptedObj.data, 'hex', 'utf8');
+  let decrypted = decipher.update(encryptedObj.data, 'base64', 'utf8');
   decrypted += decipher.final('utf8');
   return decrypted;
 }
