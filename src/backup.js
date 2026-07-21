@@ -16,8 +16,8 @@ async function generateBackup(password, logCallback) {
     sqlText += `-- Database Exporter Backup\n`;
     sqlText += `-- Generated: ${new Date().toISOString()}\n\n`;
     
-    // Fetch all tables dynamically from MySQL target database for full schema backup
-    const [tableRows] = await mysqlConn.query(`SHOW TABLES`);
+    // Fetch all base tables dynamically from MySQL target database for full schema backup
+    const [tableRows] = await mysqlConn.query(`SHOW FULL TABLES WHERE Table_type = 'BASE TABLE'`);
     const tables = tableRows.map(row => Object.values(row)[0]);
     
     const BATCH_SIZE = 500; // rows per INSERT statement
@@ -25,10 +25,13 @@ async function generateBackup(password, logCallback) {
     for (const table of tables) {
       // Fetch table creation DDL
       try {
-        const [createResult] = await mysqlConn.query(`SHOW CREATE TABLE ${table}`);
+        const [createResult] = await mysqlConn.query(`SHOW CREATE TABLE \`${table}\``);
         if (createResult.length > 0) {
-          sqlText += `DROP TABLE IF EXISTS \`${table}\`;\n`;
-          sqlText += `${createResult[0]['Create Table']};\n\n`;
+          const createStmt = createResult[0]['Create Table'] || createResult[0]['Create View'];
+          if (createStmt) {
+            sqlText += `DROP TABLE IF EXISTS \`${table}\`;\n`;
+            sqlText += `${createStmt};\n\n`;
+          }
         }
       } catch (err) {
         // Table might not exist yet
