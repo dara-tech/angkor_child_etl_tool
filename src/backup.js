@@ -16,26 +16,9 @@ async function generateBackup(password, logCallback) {
     sqlText += `-- Database Exporter Backup\n`;
     sqlText += `-- Generated: ${new Date().toISOString()}\n\n`;
     
-    // We only backup the preart tables that are updated by the export system
-    const tables = [
-      'tblcimain',
-      'tblcumain',
-      'tblpatienttest',
-      'tblcvpatientstatus',
-      'tblcvmain',
-      'tblcart',
-      'tblclink',
-      'tblcvtbdrug',
-      'tblcvoidrug',
-      'tblcvarvdrug',
-      'tbleimain',
-      'tblelink',
-      'tbletest',
-      'tblevarvdrug',
-      'tblevmain',
-      'tblevpatientstatus',
-      'tblsitename'
-    ];
+    // Fetch all tables dynamically from MySQL target database for full schema backup
+    const [tableRows] = await mysqlConn.query(`SHOW TABLES`);
+    const tables = tableRows.map(row => Object.values(row)[0]);
     
     const BATCH_SIZE = 500; // rows per INSERT statement
 
