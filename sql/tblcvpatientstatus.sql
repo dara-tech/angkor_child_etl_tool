@@ -4,7 +4,7 @@ select * from (
   ci.ClinicID + right('0'+cast(day(VisitDate) as varchar(2)),2) + right('0'+cast(Month(VisitDate) as varchar(2)),2) + right(cast(year(VisitDate) as varchar(4)),2) as vid
   from (
     select p.PatientCode, p.PtCode, mfp.VisitDate, pf.TransferDate, d.DischargeDate,
-    DATEADD(d,28,mfp.VisitDate) as ne,
+    iif(DATEADD(m,3,mfp.VisitDate)<'2020-10-01',DATEADD(m,6,mfp.VisitDate),iif(DATEADD(d,118,mfp.VisitDate)<'2020-10-01','2020-10-30',DATEADD(d,118,mfp.VisitDate))) as ne,
     iif(d.DischargeDate is not null,d.DischargeDate, iif(pf.TransferDate is not null and pf.TransferDate>=VisitDate,pf.TransferDate,null)) as Da,
     iif(d.DischargeDate is not null,'1',iif(pf.TransferDate is not null and pf.TransferDate>=VisitDate,'3',null)) as Status
     from tblHIVPatient hp

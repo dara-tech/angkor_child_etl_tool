@@ -2,6 +2,7 @@ select distinct ci.ClinicID, fv.datvisit as Daupdate,
 iif(Relationship='Mother','0',iif(Relationship='Father','1',iif(Relationship='Grandmother','2',iif(Relationship='Grandfather',3,4)))) as AddGuardian,
 '' Grou, '' House, '' Street, LEFT(av.Village, 20) as Village, LEFT(ac.Commune, 25) as Commune, LEFT(ad.District, 25) as District, LEFT(ap.Province, 25) as Province,
 LEFT(Address, 30) as AddContact, LEFT(Phone, 12) as Phone, '-1' ChildStatus, '-1' Foccupation, '-1' Moccupation, '-1' Education, '' ChildSupport, '-1' Vaccine,
+LEFT(p.CareTakerNameKhmer, 100) as CareTakerName,
 ci.ClinicID + right('0'+cast(day(fv.datvisit) as varchar(2)),2) + right('0'+cast(Month(fv.datvisit) as varchar(2)),2) + right(cast(year(fv.datvisit) as varchar(4)),2) as CUID
 from tblHIVPatient hp
 left join tblPatient p on p.PtCode=hp.PtCode

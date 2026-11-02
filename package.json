@@ -6,6 +6,7 @@
   "bin": "scheduled-task/scheduled-etl.js",
   "scripts": {
     "start": "node server.js",
+    "dev": "node server.js",
     "build:etl": "pkg . --targets node18-win-x64 --output etl-tool.exe"
   },
   "pkg": {
@@ -15,10 +16,12 @@
   },
   "dependencies": {
     "dotenv": "^16.4.5",
+    "exceljs": "^4.4.0",
     "express": "^4.19.2",
     "msnodesqlv8": "^5.2.0",
     "mssql": "^10.0.2",
-    "mysql2": "^3.9.7"
+    "mysql2": "^3.9.7",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "pkg": "^5.8.1"

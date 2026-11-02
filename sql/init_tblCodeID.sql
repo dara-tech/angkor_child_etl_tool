@@ -15,3 +15,6 @@ select 'E1703' + right('0000'+ cast(row_number() over( order by ep.VisitDate ) a
 from tblExposePatient ep
 left join tblPatient p on p.PtCode=ep.PtCode
 where not exists (select 1 from tblCodeID where PtCode = ep.PtCode and ClinicId like 'E%');
+
+CREATE CLUSTERED INDEX IX_tblCodeID_PtCode ON tblCodeID (PtCode);
+CREATE NONCLUSTERED INDEX IX_tblCodeID_HospitalID ON tblCodeID (HospitalID);

@@ -3,10 +3,10 @@ ISNULL(ef.Weight, 0) as Weight, ISNULL(ef.Height, 0) as Height, '-1' as Malnutri
 CASE 
   WHEN pcr.TestDate IS NULL OR pcr.TestDate = '1900-01-01' THEN -1
   WHEN pcr.DNAPCR IN ('Confirm First PCR', 'Confirm Second PCR') THEN 4
-  WHEN DATEDIFF(day, p.DOB, pcr.TestDate) <= 28 THEN 0
-  WHEN DATEDIFF(day, p.DOB, pcr.TestDate) BETWEEN 29 AND 76 THEN 1
-  WHEN DATEDIFF(day, p.DOB, pcr.TestDate) BETWEEN 77 AND 242 THEN 3
-  WHEN DATEDIFF(day, p.DOB, pcr.TestDate) BETWEEN 243 AND 302 THEN 5
+  WHEN DATEDIFF(day, p.DOB, ef.VisitDate) <= 28 THEN 0
+  WHEN DATEDIFF(day, p.DOB, ef.VisitDate) BETWEEN 29 AND 76 THEN 1
+  WHEN DATEDIFF(day, p.DOB, ef.VisitDate) BETWEEN 77 AND 242 THEN 3
+  WHEN DATEDIFF(day, p.DOB, ef.VisitDate) BETWEEN 243 AND 302 THEN 5
   ELSE 3
 END as DNA, 
 ISNULL(pcr.ResultDate, '1900-01-01') as DaResult, 

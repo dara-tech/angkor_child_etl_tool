@@ -52,7 +52,12 @@ async function generateBackup(password, logCallback) {
             const vals = Object.values(row).map(val => {
               if (val === null || val === undefined) return 'NULL';
               if (typeof val === 'string') return mysqlConn.escape(val);
-              if (val instanceof Date) return mysqlConn.escape(val.toISOString().split('T')[0]);
+              if (val instanceof Date) {
+                const year = val.getFullYear();
+                const month = String(val.getMonth() + 1).padStart(2, '0');
+                const day = String(val.getDate()).padStart(2, '0');
+                return mysqlConn.escape(`${year}-${month}-${day}`);
+              }
               return val;
             }).join(', ');
             return `(${vals})`;
