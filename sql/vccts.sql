@@ -1,9 +1,25 @@
+WITH DeduplicatedVCCT AS (
+    SELECT 
+        v.*,
+        ROW_NUMBER() OVER (
+            PARTITION BY 
+                CASE 
+                    WHEN v.PatientCode IS NOT NULL AND v.PatientCode <> '' THEN v.PatientCode 
+                    ELSE CAST(v.id AS VARCHAR) 
+                END,
+                v.TestResult,
+                YEAR(v.TestDate),
+                MONTH(v.TestDate)
+            ORDER BY v.TestDate ASC, v.id ASC
+        ) AS rn
+    FROM tblVCCTRegistration v
+)
 SELECT 
     'V17-03' AS site_code,
     v.id AS vcct_id,
     CAST(v.TestDate AS DATE) AS registration_date,
     v.PatientCode AS pmrs_code,
-    v.PatientCode AS hts_code,
+    CAST(v.id AS VARCHAR(20)) AS hts_code,
     NULL AS uuic,
     NULL AS idpoor,
     IIF(v.Sex = 'M', 1, 2) AS sex,
@@ -15,14 +31,15 @@ SELECT
         ELSE 1 
     END AS marital_status_id,
     CASE v.Occupation
-        WHEN 'Student' THEN 1
-        WHEN 'Housewife' THEN 2
-        WHEN 'Unemployed' THEN 3
-        WHEN 'Direct Sex Worker' THEN 4
-        WHEN 'Indirect Sex Worker' THEN 5
-        ELSE 99
+        WHEN 'Direct Sex Worker' THEN 1
+        WHEN 'Garment Factory Staff' THEN 3
+        WHEN 'Farmer or Fishery' THEN 4
+        WHEN 'Housewife' THEN 9
+        WHEN 'Indirect Sex Worker' THEN 10
+        WHEN 'Student' THEN 20
+        ELSE 24
     END AS occupation_id,
-    IIF(v.Occupation = 'Other', 'Other', '') AS occupation_other,
+    IIF(v.Occupation NOT IN ('Direct Sex Worker', 'Garment Factory Staff', 'Farmer or Fishery', 'Housewife', 'Indirect Sex Worker', 'Student'), ISNULL(v.Occupation, ''), '') AS occupation_other,
     CASE v.StudyGrade
         WHEN 'No Study' THEN 1
         WHEN 'Primary School' THEN 2
@@ -40,7 +57,16 @@ SELECT
     IIF(v.Race <> 'Cambodia', ISNULL(v.Race, ''), '') AS country_of_birth_other,
     0 AS is_migrant,
     ISNULL(v.TransferInID, 0) AS refer_from_id,
-    6 AS patient_type_id,
+    CASE 
+        WHEN (DATEDIFF(YEAR, v.DOB, v.TestDate) - 
+              CASE WHEN (MONTH(v.DOB) > MONTH(v.TestDate) OR (MONTH(v.DOB) = MONTH(v.TestDate) AND DAY(v.DOB) > DAY(v.TestDate))) THEN 1 ELSE 0 END) < 15 THEN 6
+        WHEN v.RiskFactorID = 12 THEN 2
+        WHEN v.RiskFactorID IN (10, 11) THEN 5
+        WHEN v.Occupation IN ('Direct Sex Worker', 'Indirect Sex Worker', 'Casino Staff') AND v.Sex = 'F' THEN 1
+        WHEN v.Occupation IN ('Direct Sex Worker', 'Indirect Sex Worker', 'Casino Staff') AND v.Sex = 'M' THEN 7
+        WHEN v.ReasonServiceID IN (4, 8) AND v.Sex = 'F' THEN 8
+        ELSE 6
+    END AS patient_type_id,
     IIF(v.TestingHistory = 'Tested', 1, 0) AS history_of_test,
     CASE v.TestingHistoryResult WHEN 'Positive' THEN 1 WHEN 'Negative' THEN 2 ELSE 0 END AS history_of_test_result,
     CASE v.CareGiverHIVStatus WHEN 'Positive' THEN 1 WHEN 'Negative' THEN 2 ELSE 0 END AS history_partner_result1,
@@ -60,6 +86,7 @@ SELECT
     NULL AS refer_to_other,
     v.CounselorID AS counselor_id,
     v.CreationDate AS created_at
-FROM tblVCCTRegistration v
+FROM DeduplicatedVCCT v
 LEFT OUTER JOIN tblPatient p ON v.PatientCode = p.PatientCode
+WHERE v.rn = 1
 ORDER BY v.id;
