@@ -100,7 +100,28 @@ app.get('/api/backup-stream', async (req, res) => {
 
     // Store in-memory — no temp files, no Windows path issues
     const token = crypto.randomBytes(16).toString('hex');
-    const filename = `preart_backup_${Date.now()}.h149`;
+    
+    let siteCode = '1703';
+    try {
+      const configPath = path.join(__dirname, 'config.json');
+      const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      const conn = await mysql.createConnection(config.mysql);
+      const [siteRows] = await conn.query('SELECT SiteCode FROM tblsitename LIMIT 1');
+      if (siteRows && siteRows.length > 0 && siteRows[0].SiteCode) {
+        siteCode = String(siteRows[0].SiteCode).replace(/[^a-zA-Z0-9]/g, '');
+      }
+      await conn.end();
+    } catch (e) {}
+
+    const now = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    const dd = pad(now.getDate());
+    const mm = pad(now.getMonth() + 1);
+    const yyyy = now.getFullYear();
+    const hh = pad(now.getHours());
+    const min = pad(now.getMinutes());
+    const ss = pad(now.getSeconds());
+    const filename = `${siteCode}_${dd}_${mm}_${yyyy}_${hh}_${min}_${ss}.h149`;
 
     backupTokens.set(token, { encryptedData, filename });
 

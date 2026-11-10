@@ -63,16 +63,44 @@ async function main() {
     if (process.pkg) {
       outputDir = path.join(path.dirname(process.execPath), 'converted_sql');
     } else {
-      outputDir = path.join(__dirname, 'converted_sql');
+      outputDir = path.join(__dirname, '..', 'converted_sql');
     }
     
     if (!fs.existsSync(outputDir)) {
-      fs.mkdirSync(outputDir);
+      fs.mkdirSync(outputDir, { recursive: true });
     }
     
-    // Create a filename with timestamp
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const filename = `preart_backup_${timestamp}.sql`;
+    // Fetch SiteCode from tblsitename or config
+    let siteCode = '1703';
+    try {
+      const mysql = require('mysql2/promise');
+      const { loadConfig } = require('../src/config');
+      const config = loadConfig();
+      if (config.siteCode) {
+        siteCode = String(config.siteCode).replace(/[^a-zA-Z0-9]/g, '');
+      } else {
+        const mysqlConn = await mysql.createConnection(config.mysql);
+        const [siteRows] = await mysqlConn.query('SELECT SiteCode FROM tblsitename LIMIT 1');
+        if (siteRows && siteRows.length > 0 && siteRows[0].SiteCode) {
+          siteCode = String(siteRows[0].SiteCode).replace(/[^a-zA-Z0-9]/g, '');
+        }
+        await mysqlConn.end();
+      }
+    } catch (e) {
+      // fallback to 1703
+    }
+
+    // Create a filename following: <siteCode>_<DD>_<MM>_<YYYY>_<HH>_<mm>_<ss>.sql
+    const now = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    const dd = pad(now.getDate());
+    const mm = pad(now.getMonth() + 1);
+    const yyyy = now.getFullYear();
+    const hh = pad(now.getHours());
+    const min = pad(now.getMinutes());
+    const ss = pad(now.getSeconds());
+
+    const filename = `${siteCode}_${dd}_${mm}_${yyyy}_${hh}_${min}_${ss}.sql`;
     const outputPath = path.join(outputDir, filename);
     
     fs.writeFileSync(outputPath, plainSql);
